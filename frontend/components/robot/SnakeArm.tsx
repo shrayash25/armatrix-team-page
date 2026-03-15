@@ -6,24 +6,24 @@ import * as THREE from "three";
 import Segment from "./Segment";
 import BaseUnit from "./BaseUnit";
 
-const SEGMENT_COUNT = 10;
-const SEGMENT_HEIGHT = 0.34; // hingeLength + bodyLength per segment
+const SEGMENT_COUNT = 14;
+const SEGMENT_HEIGHT = 0.42; // longer segments for more reach
 
 /**
- * Procedural snake robotic arm – horizontal, 2D screen-plane motion.
+ * Procedural snake robotic arm – horizontal from left, 3D cursor following.
  *
- * The arm extends from the LEFT side of the screen toward the RIGHT.
- * All bending happens in the screen plane (Z rotation only) –
- * no depth (3D) rotation.
+ * The arm's HEAD/TIP follows the cursor position.
+ * Both pitch (up/down) and yaw (depth) respond to mouse.
+ * Extended to ~75% of viewport width.
  */
 export default function SnakeArm() {
   const { pointer } = useThree();
 
   const jointRefs = useRef<(THREE.Group | null)[]>([]);
 
-  // Current smooth rotation state per joint (Z-axis only for 2D)
+  // Current smooth rotation state per joint
   const rotations = useRef(
-    Array.from({ length: SEGMENT_COUNT }, () => 0)
+    Array.from({ length: SEGMENT_COUNT }, () => ({ x: 0, z: 0 }))
   );
 
   const lastPointer = useRef({ x: 0, y: 0 });
@@ -44,50 +44,53 @@ export default function SnakeArm() {
       idleTime.current += 1 / 60;
     }
 
-    // ── Target: cursor Y maps to arm bend (up/down in screen plane) ──
-    // pointer.y ranges roughly -1 to 1.  Positive = cursor is high = arm bends up.
-    // We use a strong multiplier so the tip clearly follows.
-    const targetZ = -pointer.y * 0.5;
+    // ── Target direction from cursor ──
+    // pointer.y > 0 = cursor is high → arm should bend UP → positive Z
+    // pointer.x > 0 = cursor is right → add subtle depth
+    const targetZ = pointer.y * 0.5;    // up/down (screen plane)
+    const targetX = pointer.x * 0.2;    // depth (3D, subtler)
 
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       const joint = jointRefs.current[i];
       if (!joint) continue;
 
-      let segTarget: number;
+      const rot = rotations.current[i];
+
+      let segTargetZ: number;
+      let segTargetX: number;
 
       if (i === 0) {
-        segTarget = targetZ * 0.35;
+        segTargetZ = targetZ * 0.3;
+        segTargetX = targetX * 0.2;
       } else {
-        // Cascading: carry most of parent + add own contribution
         const prev = rotations.current[i - 1];
-        segTarget = prev * 0.92 + targetZ * 0.15;
+        segTargetZ = prev.z * 0.9 + targetZ * 0.12;
+        segTargetX = prev.x * 0.88 + targetX * 0.08;
       }
 
       // Clamp per-segment angle
-      const maxAngle = 0.28;
-      segTarget = THREE.MathUtils.clamp(segTarget, -maxAngle, maxAngle);
+      const maxAngle = 0.25;
+      segTargetZ = THREE.MathUtils.clamp(segTargetZ, -maxAngle, maxAngle);
+      segTargetX = THREE.MathUtils.clamp(segTargetX, -maxAngle * 0.5, maxAngle * 0.5);
 
       // Idle micro-motion
       const idleFactor = Math.min(idleTime.current * 0.4, 1.0);
-      const idle = Math.sin(time * 0.6 + i * 0.55) * 0.03 * idleFactor;
+      const idleZ = Math.sin(time * 0.6 + i * 0.55) * 0.02 * idleFactor;
+      const idleX = Math.cos(time * 0.45 + i * 0.7) * 0.012 * idleFactor;
 
-      // Smooth lerp
-      const lerpSpeed = 0.06 - i * 0.002;
-      rotations.current[i] = THREE.MathUtils.lerp(
-        rotations.current[i],
-        segTarget + idle,
-        lerpSpeed
-      );
+      // Fast lerp for quick response
+      const lerpSpeed = 0.1 - i * 0.003;
+      rot.z = THREE.MathUtils.lerp(rot.z, segTargetZ + idleZ, lerpSpeed);
+      rot.x = THREE.MathUtils.lerp(rot.x, segTargetX + idleX, lerpSpeed);
 
-      // Apply ONLY Z rotation (2D screen plane bending)
-      joint.rotation.z = rotations.current[i];
-      joint.rotation.x = 0;
+      joint.rotation.z = rot.z;
+      joint.rotation.x = rot.x;
     }
   });
 
   return (
-    // Position base on far left, rotated -90° so the Y-chain goes rightward
-    <group position={[-3.8, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+    // Base pushed further left to allow 75% screen coverage
+    <group position={[-5.2, -0.2, 0]} rotation={[0, 0, -Math.PI / 2]}>
       <BaseUnit />
       {buildChain(0, jointRefs)}
     </group>
