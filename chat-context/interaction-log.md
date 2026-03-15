@@ -210,3 +210,29 @@ Changes Made:
 
 Notes:
 - Committed to GitHub: `feat: reposition arm horizontally from left side with 2D-only motion` (4346559)
+
+---
+
+## Interaction Entry
+
+Timestamp: 2026-03-15 20:19:38
+
+User Input:
+Fix cursor tracking direction (arm repelling instead of following). Make arm longer (75% screen width). Restore 3D motion. Increase speed.
+
+AI Response Summary:
+Fixed cursor direction by removing sign negation. Extended arm to 14 segments with 0.42 spacing and base at -5.2x for ~75% coverage. Restored 3D motion (Z for up/down + X for depth). Increased lerp speed from 0.06 to 0.1. Camera pulled back to z=6 with FOV 55.
+
+Files Modified:
+- `frontend/components/robot/SnakeArm.tsx` – Fixed direction, 14 segments, faster lerp, 3D motion
+- `frontend/components/robot/RobotScene.tsx` – Camera z=6, FOV 55
+
+Changes Made:
+- Removed negation on pointer.y mapping (was causing repulsion)
+- 14 segments × 0.42 spacing for ~5.9 units total reach
+- Base moved to -5.2x for full 75% screen coverage
+- Z rotation for screen-plane bending + X rotation for subtle depth
+- Lerp speed 0.1 (base) decreasing 0.003 per segment
+
+Notes:
+- Committed to GitHub: `feat: fix cursor tracking direction, extend arm to 75% width, restore 3D, increase speed` (7f06e2b)
