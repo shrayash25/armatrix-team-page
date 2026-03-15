@@ -414,3 +414,25 @@ Changes Made:
 
 Notes:
 - Committed to GitHub: `feat: limit robotic arm movement to 2D screen plane` (4e2b1c8)
+
+---
+
+## Interaction Entry
+
+Timestamp: 2026-03-15 21:48:39
+
+User Input:
+Hydration mismatch error reported on localhost (related to body tag className).
+
+AI Response Summary:
+Resolved the Next.js hydration mismatch error by adding `suppressHydrationWarning` to the `body` tag in `app/layout.tsx`. This addresses structural mismatches often caused by browser extensions or environment-specific attribute injections during SSR/CSR handover.
+
+Files Modified:
+- `frontend/app/layout.tsx` – Added `suppressHydrationWarning` to the `body` tag.
+
+Changes Made:
+- Applied `suppressHydrationWarning={true}` to the root `body` element.
+- Verified fix with a successful production build.
+
+Notes:
+- Committed to GitHub: `fix: resolve Next.js hydration mismatch on body tag` (b0985c0)
