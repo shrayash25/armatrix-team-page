@@ -156,3 +156,31 @@ Changes Made:
 Notes:
 - Committed to GitHub: `feat: replace hero 3D object with procedural snake robotic arm`
 - Old FloatingObject.tsx and ThreeScene.tsx still exist but are no longer imported.
+
+---
+
+## Interaction Entry
+
+Timestamp: 2026-03-15 14:01:36
+
+User Input:
+Make the arm more mobile so the tip follows the cursor. Replace ring-type hinges with hinge-band joints between cylindrical sections (matching provided reference image of the Armatrix snake arm).
+
+AI Response Summary:
+Redesigned Segment.tsx with dark hinge bands (short narrow dark cylinders) between light cylindrical body sections and a hollow tube end effector. Rebuilt SnakeArm.tsx with dramatically increased mobility: cascading rotation (0.92 carry + 0.15 additive) so the tip actually follows cursor direction. Increased to 10 segments. Updated BaseUnit to wider/flatter design. Verified with browser testing showing clear left/right/up cursor tracking.
+
+Files Modified:
+- `frontend/components/robot/Segment.tsx` – Hinge-band joints, tapered body, hollow tube tip
+- `frontend/components/robot/SnakeArm.tsx` – Cascading rotation, stronger tracking, 10 segments
+- `frontend/components/robot/BaseUnit.tsx` – Wider/flatter design with edge bevel
+
+Changes Made:
+- Dark hinge bands (narrower, darker cylinders) replace torus ring joints
+- Cascading rotation: 0.92 carry + 0.15 additive per segment (tip follows cursor)
+- Per-segment clamping at ±0.28 rad for realistic limits
+- Faster lerp (0.06) for responsive tracking
+- 10 segments (up from 8) for longer, more snake-like arm
+- Hollow cylindrical end effector with inner bore
+
+Notes:
+- Committed to GitHub: `feat: redesign arm joints to hinge-band style and increase mobility` (d7b7a40)
