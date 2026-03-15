@@ -60,7 +60,7 @@ export default function TeamPage() {
   return (
     <main className="min-h-screen bg-black">
       {/* ── 3D Hero Section ── */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-[calc(100vh-5rem)] min-h-[500px] flex items-center justify-center overflow-hidden">
         {/* Robot arm 3D canvas */}
         <Suspense fallback={null}>
           <RobotScene />

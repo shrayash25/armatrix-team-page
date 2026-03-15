@@ -25,7 +25,7 @@ SEED_DATA: list[dict] = [
         "department": "Leadership",
         "bio": "Leading the vision and strategy for Armatrix's deep-tech robotic solutions and autonomous systems.",
         "photo_url": "https://api.dicebear.com/8.x/notionists/svg?seed=vishrant",
-        "linkedin_url": "https://linkedin.com/in/vishrantdave",
+        "linkedin_url": "https://www.linkedin.com/in/vishrant-dave/",
     },
     {
         "name": "Prateesh Awasthi",
@@ -33,7 +33,7 @@ SEED_DATA: list[dict] = [
         "department": "Leadership",
         "bio": "Driving innovation and foundational technologies to scale Armatrix's impact in the robotics industry.",
         "photo_url": "https://api.dicebear.com/8.x/notionists/svg?seed=prateesh",
-        "linkedin_url": "https://linkedin.com/in/prateeshawasthi",
+        "linkedin_url": "https://www.linkedin.com/in/prateesh-awasthi-4a5215109/",
     },
     {
         "name": "Ayush Ranjan",
@@ -41,7 +41,7 @@ SEED_DATA: list[dict] = [
         "department": "Leadership",
         "bio": "Shaping the core product roadmap and strategic partnerships to bring Armatrix robots to market.",
         "photo_url": "https://api.dicebear.com/8.x/notionists/svg?seed=ayush",
-        "linkedin_url": "https://linkedin.com/in/ayushranjan",
+        "linkedin_url": "https://www.linkedin.com/in/ayranjan/",
     },
     {
         "name": "Sounak Senapati",
@@ -49,7 +49,7 @@ SEED_DATA: list[dict] = [
         "department": "Operations",
         "bio": "Streamlining operations, guiding cross-functional initiatives, and supporting leadership execution across the company.",
         "photo_url": "https://api.dicebear.com/8.x/notionists/svg?seed=sounak",
-        "linkedin_url": "https://linkedin.com/in/sounaksenapati",
+        "linkedin_url": "https://www.linkedin.com/in/sounak-senapati-8442a7174/",
     },
     {
         "name": "Pulkit Sinha",
@@ -57,7 +57,7 @@ SEED_DATA: list[dict] = [
         "department": "Engineering",
         "bio": "Building the foundational architecture and core software systems powering Armatrix's robotics fleet.",
         "photo_url": "https://api.dicebear.com/8.x/notionists/svg?seed=pulkit",
-        "linkedin_url": "https://linkedin.com/in/pulkitsinha",
+        "linkedin_url": "https://www.linkedin.com/in/pulkit-sinha-803907200/",
     },
     {
         "name": "Anushtup Nandy",
@@ -65,7 +65,7 @@ SEED_DATA: list[dict] = [
         "department": "Engineering",
         "bio": "Developing robust engineering solutions from the ground up, focusing on system reliability and performance.",
         "photo_url": "https://api.dicebear.com/8.x/notionists/svg?seed=anushtup",
-        "linkedin_url": "https://linkedin.com/in/anushtupnandy",
+        "linkedin_url": "https://www.linkedin.com/in/anushtup-nandy/",
     },
     {
         "name": "Akshat Khandelwal",
@@ -73,7 +73,7 @@ SEED_DATA: list[dict] = [
         "department": "Operations",
         "bio": "Overseeing daily operations, supply chain logistics, and ensuring seamless deployment of robotic systems.",
         "photo_url": "https://api.dicebear.com/8.x/notionists/svg?seed=akshat",
-        "linkedin_url": "https://linkedin.com/in/akshatkhandelwal",
+        "linkedin_url": "https://www.linkedin.com/in/akshatgokul/",
     },
     {
         "name": "Shashank Singh Tomar",
@@ -81,7 +81,7 @@ SEED_DATA: list[dict] = [
         "department": "Engineering",
         "bio": "Integrating mechanical, electrical, and software components to build highly precise and responsive robotic actuators.",
         "photo_url": "https://api.dicebear.com/8.x/notionists/svg?seed=shashank",
-        "linkedin_url": "https://linkedin.com/in/shashanksinghtomar",
+        "linkedin_url": "https://www.linkedin.com/in/shashank-singh-tomar-773834234/",
     },
 ]
 

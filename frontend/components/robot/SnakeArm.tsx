@@ -8,16 +8,20 @@ import BaseUnit from "./BaseUnit";
 
 const SEGMENT_COUNT = 18;
 const SEGMENT_LENGTH = 0.45;
-const FIRST_SEGMENT_OFFSET = 0.2; // Based on your initial position offset
+const FIRST_SEGMENT_OFFSET = 0.2; 
 
 export default function SnakeArm() {
-  const { pointer, viewport } = useThree();
+  const { viewport } = useThree();
 
   const baseGroupRef = useRef<THREE.Group>(null);
   const joints = useRef<(THREE.Group | null)[]>([]);
   
-  // New ref to hold the smoothed target position
   const smoothedTarget = useRef(new THREE.Vector2(0, 0));
+  
+  // --- NEW: Idle State Tracking Refs ---
+  const lastPointer = useRef(new THREE.Vector2(0, 0));
+  const idleTimer = useRef(0);
+  const isIdle = useRef(false);
 
   // 1. Setup mathematical segment lengths
   const lengths = useMemo(() => {
@@ -28,7 +32,7 @@ export default function SnakeArm() {
 
   const totalLength = useMemo(() => lengths.reduce((a, b) => a + b, 0), [lengths]);
 
-  // 2. Setup virtual IK nodes (mathematical points for FABRIK)
+  // 2. Setup virtual IK nodes
   const ikNodes = useRef<THREE.Vector2[]>([]);
   useEffect(() => {
     ikNodes.current = Array.from({ length: SEGMENT_COUNT + 1 }, () => new THREE.Vector2());
@@ -40,24 +44,48 @@ export default function SnakeArm() {
     }
   }, [lengths]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (!baseGroupRef.current || ikNodes.current.length === 0) return;
-
-    // Convert cursor → clamped world position
-    const targetX = state.pointer.x * state.viewport.width * 0.4;
-    const targetY = state.pointer.y * state.viewport.height * 0.4;
 
     const bx = state.viewport.width * 0.45;
     const by = state.viewport.height * 0.45;
 
-    const tx = THREE.MathUtils.clamp(targetX, -bx, bx);
-    const ty = THREE.MathUtils.clamp(targetY, -by, by);
-
-    // Lerp the target position itself to simulate mechanical drag
-    const rawTarget2D = new THREE.Vector2(tx, ty);
+    // --- NEW: Idle State Logic ---
+    const currentPointer = new THREE.Vector2(state.pointer.x, state.pointer.y);
     
-    // Adjust 0.04 to change how "heavy" the arm's tracking feels
-    smoothedTarget.current.lerp(rawTarget2D, 0.04); 
+    // Check if mouse moved more than a tiny threshold
+    if (currentPointer.distanceTo(lastPointer.current) > 0.001) {
+      idleTimer.current = 0;
+      isIdle.current = false;
+      lastPointer.current.copy(currentPointer);
+    } else {
+      idleTimer.current += delta;
+      if (idleTimer.current > 2) { // 2 seconds of no movement triggers idle
+        isIdle.current = true;
+      }
+    }
+
+    const rawTarget2D = new THREE.Vector2();
+
+    if (isIdle.current) {
+      // Generate a smooth wandering motion using elapsed time
+      const t = state.clock.elapsedTime;
+      // Creates an organic figure-8 breathing pattern bounded to 60% of the screen
+      const idleX = Math.sin(t * 0.4) * (bx * 0.6);
+      const idleY = Math.sin(t * 0.3) * Math.cos(t * 0.2) * (by * 0.6);
+      rawTarget2D.set(idleX, idleY);
+    } else {
+      // Standard cursor tracking
+      const targetX = state.pointer.x * state.viewport.width * 0.4;
+      const targetY = state.pointer.y * state.viewport.height * 0.4;
+      const tx = THREE.MathUtils.clamp(targetX, -bx, bx);
+      const ty = THREE.MathUtils.clamp(targetY, -by, by);
+      rawTarget2D.set(tx, ty);
+    }
+
+    // Lerp the target position (slower lerp during idle for a calmer resting state)
+    const trackingSpeed = isIdle.current ? 0.015 : 0.04;
+    smoothedTarget.current.lerp(rawTarget2D, trackingSpeed); 
 
     const worldTarget = new THREE.Vector3(
       smoothedTarget.current.x, 
@@ -65,34 +93,29 @@ export default function SnakeArm() {
       0
     );
 
-    // Convert world target to the local coordinate space of the base group
     const localTarget3D = baseGroupRef.current.worldToLocal(worldTarget.clone());
     const target2D = new THREE.Vector2(localTarget3D.x, localTarget3D.y);
     
     const nodes = ikNodes.current;
 
-    // --- FABRIK ALGORITHM (Math Only) ---
+    // --- FABRIK ALGORITHM ---
     const dist = nodes[0].distanceTo(target2D);
     
     if (dist >= totalLength) {
-      // Unreachable: Point all segments in a straight line toward target
       const dir = new THREE.Vector2().subVectors(target2D, nodes[0]).normalize();
       for (let i = 0; i < SEGMENT_COUNT; i++) {
         nodes[i + 1].copy(nodes[i]).add(dir.clone().multiplyScalar(lengths[i]));
       }
     } else {
-      // Reachable: Iterative Forward/Backward reaching
       const iterations = 5; 
       for (let iter = 0; iter < iterations; iter++) {
-        // Backward pass (from tip to base)
         nodes[SEGMENT_COUNT].copy(target2D);
         for (let i = SEGMENT_COUNT - 1; i >= 0; i--) {
           const dir = new THREE.Vector2().subVectors(nodes[i], nodes[i + 1]).normalize();
           nodes[i].copy(nodes[i + 1]).add(dir.multiplyScalar(lengths[i]));
         }
 
-        // Forward pass (from base to tip)
-        nodes[0].set(0, 0); // Base is permanently anchored
+        nodes[0].set(0, 0); 
         for (let i = 0; i < SEGMENT_COUNT; i++) {
           const dir = new THREE.Vector2().subVectors(nodes[i + 1], nodes[i]).normalize();
           nodes[i + 1].copy(nodes[i]).add(dir.multiplyScalar(lengths[i]));
@@ -101,7 +124,6 @@ export default function SnakeArm() {
     }
 
     // --- APPLY MATH TO 3D HIERARCHY ---
-    // In local space, the straight arm points UP (Y axis), which is Math.PI/2
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       const dx = nodes[i + 1].x - nodes[i].x;
       const dy = nodes[i + 1].y - nodes[i].y;
@@ -109,7 +131,6 @@ export default function SnakeArm() {
 
       let targetRotation = 0;
 
-      // Convert absolute world angles to relative parent-child angles
       if (i === 0) {
         targetRotation = segmentAbsoluteAngle - Math.PI / 2;
       } else {
@@ -117,21 +138,21 @@ export default function SnakeArm() {
         const prevDy = nodes[i].y - nodes[i - 1].y;
         const prevAbsoluteAngle = Math.atan2(prevDy, prevDx);
 
-        // Find the shortest rotation path to prevent 360-degree flipping
         let diff = segmentAbsoluteAngle - prevAbsoluteAngle;
         while (diff < -Math.PI) diff += Math.PI * 2;
         while (diff > Math.PI) diff -= Math.PI * 2;
 
-        targetRotation = diff;
+        // --- NEW: Mechanical hinge limits (~60 degrees) ---
+        const maxBend = Math.PI / 3; 
+        targetRotation = THREE.MathUtils.clamp(diff, -maxBend, maxBend);
       }
 
-      // Smooth, mechanical lerp toward the calculated IK angle
       const joint = joints.current[i];
       if (joint) {
         joint.rotation.z = THREE.MathUtils.lerp(
           joint.rotation.z,
           targetRotation,
-          0.12 // Adjust this value to make the robot feel heavier/lighter
+          0.12 
         );
       }
     }

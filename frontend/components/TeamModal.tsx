@@ -20,7 +20,7 @@ export default function TeamModal({ member, onClose }: TeamModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-md"
           />
 
           {/* Modal */}
@@ -29,16 +29,29 @@ export default function TeamModal({ member, onClose }: TeamModalProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 30 }}
             transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[150] flex items-center justify-center p-4"
           >
             <div className="relative w-full max-w-md bg-[#111] border border-[#222] overflow-hidden">
               {/* Close */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center text-[#6b7280] hover:text-white transition-colors text-sm"
+                className="absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 text-white/50 hover:text-white backdrop-blur-sm border border-white/5 hover:border-white/20 transition-all duration-300"
                 aria-label="Close"
               >
-                ✕
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
 
               {/* Photo */}
