@@ -14,6 +14,15 @@ from sqlmodel import Session, select
 from app.database import create_db_and_tables, engine
 from app.models import TeamMember
 from app.routes.team import router as team_router
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or your vercel URL later
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ---------------------------------------------------------------------------
 # Seed data – realistic Armatrix robotics startup team
@@ -128,3 +137,4 @@ app.include_router(team_router)
 def health_check():
     """Simple health-check endpoint."""
     return {"status": "ok", "service": "armatrix-team-api"}
+
