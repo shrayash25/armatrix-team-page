@@ -32,7 +32,7 @@ export default function GlowCursor() {
         Using box-shadow is much more effective than blur-md for intense glows.
       */}
       <div 
-        className="w-1.5 h-1.5 rounded-full bg-white relative animate-pulse"
+        className="w-2 h-2 rounded-full bg-white relative"
         style={{
           boxShadow: `
             0 0 10px 2px rgba(255, 255, 255, 0.8),

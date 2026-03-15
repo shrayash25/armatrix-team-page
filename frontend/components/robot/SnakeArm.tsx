@@ -45,10 +45,10 @@ export default function SnakeArm() {
     }
 
     // ── Target direction from cursor ──
-    // pointer.y > 0 = cursor is high → arm should bend UP → positive Z
-    // pointer.x > 0 = cursor is right → add subtle depth
-    const targetZ = pointer.y * 0.5;    // up/down (screen plane)
-    const targetX = pointer.x * 0.2;    // depth (3D, subtler)
+    // pointer.y > 0 = cursor is high. 
+    // In local space (rotated -90), negative Z rotation points global UP.
+    const targetZ = -pointer.y * 0.4;    // up/down (screen plane) - inverted to follow
+    const targetX = pointer.x * 0.15;   // depth (3D, subtler)
 
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       const joint = jointRefs.current[i];
@@ -60,18 +60,18 @@ export default function SnakeArm() {
       let segTargetX: number;
 
       if (i === 0) {
-        segTargetZ = targetZ * 0.3;
-        segTargetX = targetX * 0.2;
+        segTargetZ = targetZ * 0.25;
+        segTargetX = targetX * 0.15;
       } else {
         const prev = rotations.current[i - 1];
-        segTargetZ = prev.z * 0.9 + targetZ * 0.12;
-        segTargetX = prev.x * 0.88 + targetX * 0.08;
+        segTargetZ = prev.z * 0.88 + targetZ * 0.1;
+        segTargetX = prev.x * 0.85 + targetX * 0.05;
       }
 
-      // Clamp per-segment angle
-      const maxAngle = 0.25;
+      // ── Tighter clamp to keep it inside window ──
+      const maxAngle = 0.14; 
       segTargetZ = THREE.MathUtils.clamp(segTargetZ, -maxAngle, maxAngle);
-      segTargetX = THREE.MathUtils.clamp(segTargetX, -maxAngle * 0.5, maxAngle * 0.5);
+      segTargetX = THREE.MathUtils.clamp(segTargetX, -maxAngle * 0.4, maxAngle * 0.4);
 
       // Idle micro-motion
       const idleFactor = Math.min(idleTime.current * 0.4, 1.0);

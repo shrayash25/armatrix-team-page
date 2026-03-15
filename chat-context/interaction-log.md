@@ -288,3 +288,29 @@ Changes Made:
 
 Notes:
 - Committed to GitHub: `style: intensify cursor glow with multi-layered box-shadow and pulsation` (d27577e)
+
+---
+
+## Interaction Entry
+
+Timestamp: 2026-03-15 20:46:51
+
+User Input:
+Limit movement of the arm to the inside of the window. Remove cursor pulsation and make it slightly larger.
+
+AI Response Summary:
+Refined arm kinematics to prevent off-screen clipping and updated the custom cursor style. Tightened `maxAngle` to 0.14 and fixed a tracking inversion. Removed `animate-pulse` and increased cursor dot size in `GlowCursor.tsx`.
+
+Files Modified:
+- `frontend/components/robot/SnakeArm.tsx` – Tightened bend limits, fixed tracking inversion
+- `frontend/components/GlowCursor.tsx` – Removed animation, increased size
+
+Changes Made:
+- Reduced `maxAngle` from 0.18 to 0.14 for better containment
+- Inverted `targetZ` mapping to fix UP/DOWN tracking direction
+- Increased cursor inner dot from 6px to 8px (w-2 h-2)
+- Removed `animate-pulse` class from cursor core
+- Verified containment and tracking accuracy in browser
+
+Notes:
+- Committed to GitHub: `feat: refine arm mobility constraints and cursor styling` (890e7f2)
