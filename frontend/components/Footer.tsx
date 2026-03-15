@@ -17,9 +17,9 @@ export default function Footer() {
             <Image
               src="/Logo_white.png"
               alt="Armatrix Logo"
-              width={140}
-              height={40}
-              className="h-10 w-auto opacity-90 hover:opacity-100 transition-opacity"
+              width={250}
+              height={250}
+              className="h-30 w-auto opacity-90 hover:opacity-100 transition-opacity"
             />
           </div>
 
