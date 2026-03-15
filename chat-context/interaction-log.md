@@ -264,3 +264,27 @@ Changes Made:
 
 Notes:
 - Committed to GitHub: `feat: implement custom white glowing dot cursor` (21e416b)
+
+---
+
+## Interaction Entry
+
+Timestamp: 2026-03-15 20:43:42
+
+User Input:
+The cursor is not glowing.
+
+AI Response Summary:
+Intensified the cursor glow by replacing the simple blurred div with a multi-layered `box-shadow` (reaching up to 40px radius) and added a breathing pulse animation. Verified the enhanced visual effect in the browser.
+
+Files Modified:
+- `frontend/components/GlowCursor.tsx` – Enhanced glow with box-shadows and pulse animation
+
+Changes Made:
+- Applied three layers of `box-shadow` for intense white glow spread
+- Added `animate-pulse` for a high-tech breathing effect
+- Reduced inner dot size to 6px (1.5h) to emphasize the glow relative to the core
+- Verified visible glow against dark theme via browser screenshots
+
+Notes:
+- Committed to GitHub: `style: intensify cursor glow with multi-layered box-shadow and pulsation` (d27577e)
