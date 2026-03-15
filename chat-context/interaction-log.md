@@ -236,3 +236,31 @@ Changes Made:
 
 Notes:
 - Committed to GitHub: `feat: fix cursor tracking direction, extend arm to 75% width, restore 3D, increase speed` (7f06e2b)
+
+---
+
+## Interaction Entry
+
+Timestamp: 2026-03-15 20:26:40
+
+User Input:
+Make a white glowing dot cursor pointer.
+
+AI Response Summary:
+Created a custom `GlowCursor` component using a bright white dot with a blurred halo. Disabled the default browser cursor via `globals.css` and integrated the custom cursor globally in `layout.tsx`. Verified that the robot arm still tracks the custom cursor correctly.
+
+Files Created:
+- `frontend/components/GlowCursor.tsx` – React component for custom cursor
+
+Files Modified:
+- `frontend/app/layout.tsx` – Integrated GlowCursor component
+- `frontend/app/globals.css` – Hidden default browser cursor
+
+Changes Made:
+- Custom 12px white dot with `blur-md` glow effect
+- Fixed positioning with `mousemove` event listener
+- Default browser cursor hidden with `cursor: none` on body
+- verified that `pointer-events-none` allows clicks and 3D scene tracking
+
+Notes:
+- Committed to GitHub: `feat: implement custom white glowing dot cursor` (21e416b)
