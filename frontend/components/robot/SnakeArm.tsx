@@ -47,9 +47,16 @@ export default function SnakeArm() {
     // ── Target direction from cursor ──
     // pointer.y > 0 = cursor is high. 
     // In local space (rotated -90), negative Z rotation points global UP.
-    // Increased multipliers for more dramatic off-screen range.
-    const targetZ = -pointer.y * 0.55;   // up/down (screen plane)
-    const targetX = pointer.x * 0.25;    // depth (3D, subtler)
+    // Normalized and scaled cursor mapping:
+    const targetZ = -pointer.y * 0.5;    // mouse Y -> screen vertical range
+    const targetX = pointer.x * 0.6;     // mouse X -> screen depth range
+
+    const maxAngleY = 0.5;
+    const maxAngleX = 0.6;
+
+    // Clamped target values
+    const clampedTargetZ = THREE.MathUtils.clamp(targetZ, -maxAngleY, maxAngleY);
+    const clampedTargetX = THREE.MathUtils.clamp(targetX, -maxAngleX, maxAngleX);
 
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       const joint = jointRefs.current[i];
@@ -61,18 +68,18 @@ export default function SnakeArm() {
       let segTargetX: number;
 
       if (i === 0) {
-        segTargetZ = targetZ * 0.25;
-        segTargetX = targetX * 0.15;
+        segTargetZ = clampedTargetZ * 0.25;
+        segTargetX = clampedTargetX * 0.15;
       } else {
         const prev = rotations.current[i - 1];
-        segTargetZ = prev.z * 0.9 + targetZ * 0.14;
-        segTargetX = prev.x * 0.88 + targetX * 0.08;
+        segTargetZ = prev.z * 0.9 + clampedTargetZ * 0.14;
+        segTargetX = prev.x * 0.88 + clampedTargetX * 0.08;
       }
 
-      // ── Much looser clamp to allow moving out of screen ──
-      const maxAngle = 0.4; 
-      segTargetZ = THREE.MathUtils.clamp(segTargetZ, -maxAngle, maxAngle);
-      segTargetX = THREE.MathUtils.clamp(segTargetX, -maxAngle * 0.5, maxAngle * 0.5);
+      // ── Per-segment rotation limits [-0.35, 0.35] ──
+      const segmentLimit = 0.35; 
+      segTargetZ = THREE.MathUtils.clamp(segTargetZ, -segmentLimit, segmentLimit);
+      segTargetX = THREE.MathUtils.clamp(segTargetX, -segmentLimit * 0.6, segmentLimit * 0.6);
 
       // Idle micro-motion
       const idleFactor = Math.min(idleTime.current * 0.4, 1.0);

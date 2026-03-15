@@ -18,9 +18,11 @@ export default function RobotScene() {
         style={{ background: "transparent" }}
       >
         <Suspense fallback={null}>
-          <ambientLight intensity={0.4} />
-          <directionalLight position={[3, 5, 4]} intensity={0.6} />
-          <directionalLight position={[-2, 3, -3]} intensity={0.2} />
+          <ambientLight intensity={0.7} />
+          {/* Primary light */}
+          <directionalLight position={[3, 3, 3]} intensity={1.2} />
+          {/* Rim light */}
+          <directionalLight position={[-3, 2, -3]} intensity={0.6} />
 
           <SnakeArm />
         </Suspense>

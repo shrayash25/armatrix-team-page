@@ -41,8 +41,8 @@ export default function Segment({ index, totalSegments }: SegmentProps) {
       <mesh position={[0, hingeLength + bodyLength / 2, 0]}>
         <cylinderGeometry args={[bodyRadius, bodyRadius, bodyLength, 20]} />
         <meshStandardMaterial
-          color="#c0c0c0"
-          metalness={0.85}
+          color="#ffffff"
+          metalness={0.95}
           roughness={0.2}
         />
       </mesh>
