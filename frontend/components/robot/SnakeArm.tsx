@@ -6,15 +6,15 @@ import * as THREE from "three";
 import Segment from "./Segment";
 import BaseUnit from "./BaseUnit";
 
-const SEGMENT_COUNT = 14;
-const SEGMENT_HEIGHT = 0.42; // longer segments for more reach
+const SEGMENT_COUNT = 18;
+const SEGMENT_HEIGHT = 0.45; // longer segments for more reach
 
 /**
  * Procedural snake robotic arm – horizontal from left, 3D cursor following.
  *
  * The arm's HEAD/TIP follows the cursor position.
  * Both pitch (up/down) and yaw (depth) respond to mouse.
- * Extended to ~75% of viewport width.
+ * Extended to ~75% of viewport width and allowed to go off-screen.
  */
 export default function SnakeArm() {
   const { pointer } = useThree();
@@ -47,8 +47,9 @@ export default function SnakeArm() {
     // ── Target direction from cursor ──
     // pointer.y > 0 = cursor is high. 
     // In local space (rotated -90), negative Z rotation points global UP.
-    const targetZ = -pointer.y * 0.4;    // up/down (screen plane) - inverted to follow
-    const targetX = pointer.x * 0.15;   // depth (3D, subtler)
+    // Increased multipliers for more dramatic off-screen range.
+    const targetZ = -pointer.y * 0.55;   // up/down (screen plane)
+    const targetX = pointer.x * 0.25;    // depth (3D, subtler)
 
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       const joint = jointRefs.current[i];
@@ -64,14 +65,14 @@ export default function SnakeArm() {
         segTargetX = targetX * 0.15;
       } else {
         const prev = rotations.current[i - 1];
-        segTargetZ = prev.z * 0.88 + targetZ * 0.1;
-        segTargetX = prev.x * 0.85 + targetX * 0.05;
+        segTargetZ = prev.z * 0.9 + targetZ * 0.14;
+        segTargetX = prev.x * 0.88 + targetX * 0.08;
       }
 
-      // ── Tighter clamp to keep it inside window ──
-      const maxAngle = 0.14; 
+      // ── Much looser clamp to allow moving out of screen ──
+      const maxAngle = 0.4; 
       segTargetZ = THREE.MathUtils.clamp(segTargetZ, -maxAngle, maxAngle);
-      segTargetX = THREE.MathUtils.clamp(segTargetX, -maxAngle * 0.4, maxAngle * 0.4);
+      segTargetX = THREE.MathUtils.clamp(segTargetX, -maxAngle * 0.5, maxAngle * 0.5);
 
       // Idle micro-motion
       const idleFactor = Math.min(idleTime.current * 0.4, 1.0);
@@ -90,7 +91,7 @@ export default function SnakeArm() {
 
   return (
     // Base pushed further left to allow 75% screen coverage
-    <group position={[-5.2, -0.2, 0]} rotation={[0, 0, -Math.PI / 2]}>
+    <group position={[-5.5, -0.2, 0]} rotation={[0, 0, -Math.PI / 2]}>
       <BaseUnit />
       {buildChain(0, jointRefs)}
     </group>
