@@ -45,11 +45,11 @@ export default function SnakeArm() {
     }
 
     // ── Target direction from cursor ──
-    // pointer.y > 0 = cursor is high. 
-    // In local space (rotated -90), negative Z rotation points global UP.
+    // pointer.y > 0 = cursor is high.
     // Normalized and scaled cursor mapping:
-    const targetZ = -pointer.y * 0.5;    // mouse Y -> screen vertical range
-    const targetX = pointer.x * 0.6;     // mouse X -> screen depth range
+    // Removed negation from targetZ and added to targetX to fix "moving away" issue.
+    const targetZ = pointer.y * 0.5;     // mouse Y -> screen vertical range
+    const targetX = -pointer.x * 0.6;    // mouse X -> screen depth range
 
     const maxAngleY = 0.5;
     const maxAngleX = 0.6;

@@ -367,3 +367,26 @@ Changes Made:
 Notes:
 - Committed to GitHub: `fix: constrain robotic arm movement within scene bounds` (a7d3e41)
 - Committed to GitHub: `style: improve hero lighting for better visibility` (b2e3f42)
+
+---
+
+## Interaction Entry
+
+Timestamp: 2026-03-15 21:15:44
+
+User Input:
+Its moving away from the cursor not towards it. make the head of the arm follow the cursor.
+
+AI Response Summary:
+Corrected the cursor tracking logic by inverting the target rotation axes. Verified that the arm head now accurately follows the cursor position across the entire visible frame.
+
+Files Modified:
+- `frontend/components/robot/SnakeArm.tsx` – Inverted `targetZ` and `targetX` mappings.
+
+Changes Made:
+- Removed negation from `targetZ` (vertical bending).
+- Added negation to `targetX` (depth bending).
+- Verified "towards" movement with browser screenshots.
+
+Notes:
+- Committed to GitHub: `fix: correct cursor tracking direction in robotic arm` (0a7d3e4)
