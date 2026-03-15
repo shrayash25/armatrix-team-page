@@ -24,7 +24,7 @@ export default function TeamGrid({ members, onSelectMember }: TeamGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[1px] bg-[#222]">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
       {members.map((member, index) => (
         <TeamCard
           key={member.id}

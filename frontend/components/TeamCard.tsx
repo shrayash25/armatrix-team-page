@@ -30,13 +30,17 @@ export default function TeamCard({ member, index, onClick }: TeamCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={{
+        duration: 0.6,
+        delay: index * 0.1,
+        ease: [0.25, 0.46, 0.45, 0.94],
+      }}
       whileHover={{ y: -6, transition: { duration: 0.3 } }}
       onClick={onClick}
-      className="group relative cursor-pointer rounded-none bg-[#111] border border-[#222] overflow-hidden transition-all duration-300 hover:border-[#444]"
+      className="group relative cursor-pointer rounded-xl bg-black border border-white/10 overflow-hidden transition-all duration-300 hover:border-white/25 hover:shadow-[0_0_30px_rgba(255,255,255,0.04)]"
     >
       {/* Photo */}
-      <div className="relative w-full aspect-square overflow-hidden bg-black">
+      <div className="relative w-full aspect-square overflow-hidden bg-[#050505]">
         <Image
           src={member.photo_url}
           alt={member.name}
@@ -45,30 +49,20 @@ export default function TeamCard({ member, index, onClick }: TeamCardProps) {
           unoptimized
         />
         {/* Bottom gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
       </div>
 
       {/* Info */}
       <div className="p-5">
-        <h3 className="text-sm font-medium tracking-wide uppercase text-white">
+        <h3 className="text-sm font-medium tracking-wide text-white">
           {member.name}
         </h3>
-        <p className="text-xs text-[#D1D5DB] mt-1 tracking-wider">
+        <p className="text-xs text-[#6b7280] mt-1.5 tracking-wider">
           {member.role}
         </p>
 
-        {/* Department tag */}
-        <span className="inline-block mt-3 px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-[0.15em] text-[#D1D5DB] border border-[#333] rounded-none">
-          {member.department}
-        </span>
-
-        {/* Bio preview – appears on hover */}
-        <p className="text-[11px] text-[#6b7280] mt-3 leading-relaxed line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          {member.bio}
-        </p>
-
         {/* LinkedIn – fades in on hover */}
-        <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <a
             href={member.linkedin_url}
             target="_blank"

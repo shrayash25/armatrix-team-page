@@ -7,20 +7,22 @@ import TeamGrid from "@/components/TeamGrid";
 import TeamModal from "@/components/TeamModal";
 import DepartmentFilter from "@/components/DepartmentFilter";
 
-// Lazy-load the 3D scene for performance
-const ThreeScene = lazy(() => import("@/components/ThreeScene"));
+// Lazy-load the 3D robot scene for performance
+const RobotScene = lazy(() => import("@/components/robot/RobotScene"));
 
 /** Monochrome skeleton loader */
 function GridSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[1px] bg-[#222]">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="bg-[#111] overflow-hidden animate-pulse">
+        <div
+          key={i}
+          className="rounded-xl bg-black border border-white/10 overflow-hidden animate-pulse"
+        >
           <div className="w-full aspect-square bg-[#0a0a0a]" />
           <div className="p-5 space-y-3">
-            <div className="h-3 w-3/4 bg-[#1a1a1a]" />
-            <div className="h-2.5 w-1/2 bg-[#1a1a1a]" />
-            <div className="h-4 w-20 bg-[#1a1a1a]" />
+            <div className="h-3 w-3/4 bg-[#1a1a1a] rounded" />
+            <div className="h-2.5 w-1/2 bg-[#1a1a1a] rounded" />
           </div>
         </div>
       ))}
@@ -59,9 +61,9 @@ export default function TeamPage() {
     <main className="min-h-screen bg-black">
       {/* ── 3D Hero Section ── */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Three.js canvas */}
+        {/* Robot arm 3D canvas */}
         <Suspense fallback={null}>
-          <ThreeScene />
+          <RobotScene />
         </Suspense>
 
         {/* Overlay text */}
@@ -90,7 +92,7 @@ export default function TeamPage() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="mt-6 text-sm md:text-base text-[#6b7280] max-w-md mx-auto tracking-wide"
           >
-            The people building the future of industrial robotics
+            The engineers behind Armatrix robotics
           </motion.p>
 
           {/* Scroll indicator */}
