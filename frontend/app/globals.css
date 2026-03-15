@@ -26,14 +26,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
-body {
-  background: #000000;
-  color: #ffffff;
-  font-family: var(--font-sans, "Inter", system-ui, -apple-system, sans-serif);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-  cursor: none;
+@media (hover: hover) and (pointer: fine) {
+  body {
+    cursor: none;
+  }
 }
 
 /* ── Custom Scrollbar ── */

@@ -10,6 +10,10 @@ export default function GlowCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Disable custom cursor on mobile/touch devices
+    const isMobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+    if (isMobile) return;
+
     const onMouseMove = (e: MouseEvent) => {
       if (dotRef.current) {
         dotRef.current.style.left = `${e.clientX}px`;
@@ -24,7 +28,7 @@ export default function GlowCursor() {
   return (
     <div
       ref={dotRef}
-      className="pointer-events-none fixed z-[9999] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none"
+      className="pointer-events-none fixed z-[9999] -translate-x-1/2 -translate-y-1/2 hidden lg:flex items-center justify-center"
       style={{ left: "-100px", top: "-100px" }}
     >
       {/* 
