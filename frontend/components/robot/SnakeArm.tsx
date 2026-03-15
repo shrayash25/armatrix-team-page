@@ -1,119 +1,169 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import Segment from "./Segment";
 import BaseUnit from "./BaseUnit";
 
 const SEGMENT_COUNT = 18;
-const SEGMENT_HEIGHT = 0.45; // longer segments for more reach
+const SEGMENT_LENGTH = 0.45;
+const FIRST_SEGMENT_OFFSET = 0.2; // Based on your initial position offset
 
-/**
- * Procedural snake robotic arm – horizontal from left, 3D cursor following.
- *
- * The arm's HEAD/TIP follows the cursor position.
- * Both pitch (up/down) and yaw (depth) respond to mouse.
- * Extended to ~75% of viewport width and allowed to go off-screen.
- */
 export default function SnakeArm() {
-  const { pointer } = useThree();
+  const { pointer, viewport } = useThree();
 
-  const jointRefs = useRef<(THREE.Group | null)[]>([]);
+  const baseGroupRef = useRef<THREE.Group>(null);
+  const joints = useRef<(THREE.Group | null)[]>([]);
+  
+  // New ref to hold the smoothed target position
+  const smoothedTarget = useRef(new THREE.Vector2(0, 0));
 
-  // Current smooth rotation state per joint
-  const rotations = useRef(
-    Array.from({ length: SEGMENT_COUNT }, () => ({ x: 0, z: 0 }))
-  );
+  // 1. Setup mathematical segment lengths
+  const lengths = useMemo(() => {
+    const arr = new Array(SEGMENT_COUNT).fill(SEGMENT_LENGTH);
+    arr[0] = FIRST_SEGMENT_OFFSET;
+    return arr;
+  }, []);
 
-  const lastPointer = useRef({ x: 0, y: 0 });
-  const idleTime = useRef(0);
+  const totalLength = useMemo(() => lengths.reduce((a, b) => a + b, 0), [lengths]);
+
+  // 2. Setup virtual IK nodes (mathematical points for FABRIK)
+  const ikNodes = useRef<THREE.Vector2[]>([]);
+  useEffect(() => {
+    ikNodes.current = Array.from({ length: SEGMENT_COUNT + 1 }, () => new THREE.Vector2());
+    let currentY = 0;
+    ikNodes.current[0].set(0, 0);
+    for (let i = 0; i < SEGMENT_COUNT; i++) {
+      currentY += lengths[i];
+      ikNodes.current[i + 1].set(0, currentY);
+    }
+  }, [lengths]);
 
   useFrame((state) => {
-    const time = state.clock.elapsedTime;
+    if (!baseGroupRef.current || ikNodes.current.length === 0) return;
 
-    // Idle detection
-    const dx = Math.abs(pointer.x - lastPointer.current.x);
-    const dy = Math.abs(pointer.y - lastPointer.current.y);
-    const isMoving = dx + dy > 0.002;
+    // Convert cursor → clamped world position
+    const targetX = state.pointer.x * state.viewport.width * 0.4;
+    const targetY = state.pointer.y * state.viewport.height * 0.4;
 
-    if (isMoving) {
-      idleTime.current = 0;
-      lastPointer.current = { x: pointer.x, y: pointer.y };
+    const bx = state.viewport.width * 0.45;
+    const by = state.viewport.height * 0.45;
+
+    const tx = THREE.MathUtils.clamp(targetX, -bx, bx);
+    const ty = THREE.MathUtils.clamp(targetY, -by, by);
+
+    // Lerp the target position itself to simulate mechanical drag
+    const rawTarget2D = new THREE.Vector2(tx, ty);
+    
+    // Adjust 0.04 to change how "heavy" the arm's tracking feels
+    smoothedTarget.current.lerp(rawTarget2D, 0.04); 
+
+    const worldTarget = new THREE.Vector3(
+      smoothedTarget.current.x, 
+      smoothedTarget.current.y, 
+      0
+    );
+
+    // Convert world target to the local coordinate space of the base group
+    const localTarget3D = baseGroupRef.current.worldToLocal(worldTarget.clone());
+    const target2D = new THREE.Vector2(localTarget3D.x, localTarget3D.y);
+    
+    const nodes = ikNodes.current;
+
+    // --- FABRIK ALGORITHM (Math Only) ---
+    const dist = nodes[0].distanceTo(target2D);
+    
+    if (dist >= totalLength) {
+      // Unreachable: Point all segments in a straight line toward target
+      const dir = new THREE.Vector2().subVectors(target2D, nodes[0]).normalize();
+      for (let i = 0; i < SEGMENT_COUNT; i++) {
+        nodes[i + 1].copy(nodes[i]).add(dir.clone().multiplyScalar(lengths[i]));
+      }
     } else {
-      idleTime.current += 1 / 60;
+      // Reachable: Iterative Forward/Backward reaching
+      const iterations = 5; 
+      for (let iter = 0; iter < iterations; iter++) {
+        // Backward pass (from tip to base)
+        nodes[SEGMENT_COUNT].copy(target2D);
+        for (let i = SEGMENT_COUNT - 1; i >= 0; i--) {
+          const dir = new THREE.Vector2().subVectors(nodes[i], nodes[i + 1]).normalize();
+          nodes[i].copy(nodes[i + 1]).add(dir.multiplyScalar(lengths[i]));
+        }
+
+        // Forward pass (from base to tip)
+        nodes[0].set(0, 0); // Base is permanently anchored
+        for (let i = 0; i < SEGMENT_COUNT; i++) {
+          const dir = new THREE.Vector2().subVectors(nodes[i + 1], nodes[i]).normalize();
+          nodes[i + 1].copy(nodes[i]).add(dir.multiplyScalar(lengths[i]));
+        }
+      }
     }
 
-    // ── Target direction from cursor ──
-    // pointer.y > 0 = cursor is high.
-    // Normalized and scaled cursor mapping:
-    const targetZ = pointer.y * 0.5;     // mouse Y -> screen vertical range
-
-    const maxAngleY = 0.5;
-
-    // Clamped target value (2D only - no depth)
-    const clampedTargetZ = THREE.MathUtils.clamp(targetZ, -maxAngleY, maxAngleY);
-
+    // --- APPLY MATH TO 3D HIERARCHY ---
+    // In local space, the straight arm points UP (Y axis), which is Math.PI/2
     for (let i = 0; i < SEGMENT_COUNT; i++) {
-      const joint = jointRefs.current[i];
-      if (!joint) continue;
+      const dx = nodes[i + 1].x - nodes[i].x;
+      const dy = nodes[i + 1].y - nodes[i].y;
+      const segmentAbsoluteAngle = Math.atan2(dy, dx); 
 
-      const rot = rotations.current[i];
+      let targetRotation = 0;
 
-      let segTargetZ: number;
-
+      // Convert absolute world angles to relative parent-child angles
       if (i === 0) {
-        segTargetZ = clampedTargetZ * 0.25;
+        targetRotation = segmentAbsoluteAngle - Math.PI / 2;
       } else {
-        const prev = rotations.current[i - 1];
-        segTargetZ = prev.z * 0.9 + clampedTargetZ * 0.14;
+        const prevDx = nodes[i].x - nodes[i - 1].x;
+        const prevDy = nodes[i].y - nodes[i - 1].y;
+        const prevAbsoluteAngle = Math.atan2(prevDy, prevDx);
+
+        // Find the shortest rotation path to prevent 360-degree flipping
+        let diff = segmentAbsoluteAngle - prevAbsoluteAngle;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+
+        targetRotation = diff;
       }
 
-      // ── Per-segment rotation limits [-0.35, 0.35] ──
-      const segmentLimit = 0.35; 
-      segTargetZ = THREE.MathUtils.clamp(segTargetZ, -segmentLimit, segmentLimit);
-
-      // Idle micro-motion (2D only)
-      const idleFactor = Math.min(idleTime.current * 0.4, 1.0);
-      const idleZ = Math.sin(time * 0.6 + i * 0.55) * 0.02 * idleFactor;
-
-      // Fast lerp for quick response
-      const lerpSpeed = 0.1 - i * 0.003;
-      rot.z = THREE.MathUtils.lerp(rot.z, segTargetZ + idleZ, lerpSpeed);
-      rot.x = THREE.MathUtils.lerp(rot.x, 0, lerpSpeed); // Keep X at 0
-
-      joint.rotation.z = rot.z;
-      joint.rotation.x = rot.x; // Actually zero
+      // Smooth, mechanical lerp toward the calculated IK angle
+      const joint = joints.current[i];
+      if (joint) {
+        joint.rotation.z = THREE.MathUtils.lerp(
+          joint.rotation.z,
+          targetRotation,
+          0.12 // Adjust this value to make the robot feel heavier/lighter
+        );
+      }
     }
   });
 
   return (
-    // Base pushed further left to allow 75% screen coverage
-    <group position={[-5.5, -0.2, 0]} rotation={[0, 0, -Math.PI / 2]}>
+    <group 
+      ref={baseGroupRef}
+      position={[-5.5, -0.2, 0]} 
+      rotation={[0, 0, -Math.PI / 2]}
+    >
       <BaseUnit />
-      {buildChain(0, jointRefs)}
+      {buildChain(0, joints)}
     </group>
   );
 }
 
-/**
- * Recursively build nested segment groups.
- */
 function buildChain(
   index: number,
-  jointRefs: React.MutableRefObject<(THREE.Group | null)[]>
+  joints: React.MutableRefObject<(THREE.Group | null)[]>
 ): React.ReactNode {
   if (index >= SEGMENT_COUNT) return null;
 
   return (
     <group
-      position={[0, index === 0 ? 0.2 : SEGMENT_HEIGHT, 0]}
+      position={[0, index === 0 ? FIRST_SEGMENT_OFFSET : SEGMENT_LENGTH, 0]}
       ref={(el) => {
-        jointRefs.current[index] = el;
+        joints.current[index] = el;
       }}
     >
       <Segment index={index} totalSegments={SEGMENT_COUNT} />
-      {buildChain(index + 1, jointRefs)}
+      {buildChain(index + 1, joints)}
     </group>
   );
 }
