@@ -390,3 +390,27 @@ Changes Made:
 
 Notes:
 - Committed to GitHub: `fix: correct cursor tracking direction in robotic arm` (0a7d3e4)
+
+---
+
+## Interaction Entry
+
+Timestamp: 2026-03-15 21:20:06
+
+User Input:
+Limit the movement to 2 dimensions.
+
+AI Response Summary:
+Constrained the robotic arm movement to the 2D screen plane by removing all depth (X-axis) rotation from `SnakeArm.tsx`. Verified that the arm only responds to vertical cursor movement and remains flat in the viewport.
+
+Files Modified:
+- `frontend/components/robot/SnakeArm.tsx` – Removed depth rotation calculations and X-axis idle motion.
+
+Changes Made:
+- Set `targetX` to 0.
+- Removed `segTargetX` calculation and per-segment X-clamping.
+- Locked `rot.x` to 0 in the animation loop.
+- Verified X-axis independence in the browser.
+
+Notes:
+- Committed to GitHub: `feat: limit robotic arm movement to 2D screen plane` (4e2b1c8)

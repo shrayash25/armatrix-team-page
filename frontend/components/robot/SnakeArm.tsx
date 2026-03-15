@@ -47,16 +47,12 @@ export default function SnakeArm() {
     // ── Target direction from cursor ──
     // pointer.y > 0 = cursor is high.
     // Normalized and scaled cursor mapping:
-    // Removed negation from targetZ and added to targetX to fix "moving away" issue.
     const targetZ = pointer.y * 0.5;     // mouse Y -> screen vertical range
-    const targetX = -pointer.x * 0.6;    // mouse X -> screen depth range
 
     const maxAngleY = 0.5;
-    const maxAngleX = 0.6;
 
-    // Clamped target values
+    // Clamped target value (2D only - no depth)
     const clampedTargetZ = THREE.MathUtils.clamp(targetZ, -maxAngleY, maxAngleY);
-    const clampedTargetX = THREE.MathUtils.clamp(targetX, -maxAngleX, maxAngleX);
 
     for (let i = 0; i < SEGMENT_COUNT; i++) {
       const joint = jointRefs.current[i];
@@ -65,34 +61,29 @@ export default function SnakeArm() {
       const rot = rotations.current[i];
 
       let segTargetZ: number;
-      let segTargetX: number;
 
       if (i === 0) {
         segTargetZ = clampedTargetZ * 0.25;
-        segTargetX = clampedTargetX * 0.15;
       } else {
         const prev = rotations.current[i - 1];
         segTargetZ = prev.z * 0.9 + clampedTargetZ * 0.14;
-        segTargetX = prev.x * 0.88 + clampedTargetX * 0.08;
       }
 
       // ── Per-segment rotation limits [-0.35, 0.35] ──
       const segmentLimit = 0.35; 
       segTargetZ = THREE.MathUtils.clamp(segTargetZ, -segmentLimit, segmentLimit);
-      segTargetX = THREE.MathUtils.clamp(segTargetX, -segmentLimit * 0.6, segmentLimit * 0.6);
 
-      // Idle micro-motion
+      // Idle micro-motion (2D only)
       const idleFactor = Math.min(idleTime.current * 0.4, 1.0);
       const idleZ = Math.sin(time * 0.6 + i * 0.55) * 0.02 * idleFactor;
-      const idleX = Math.cos(time * 0.45 + i * 0.7) * 0.012 * idleFactor;
 
       // Fast lerp for quick response
       const lerpSpeed = 0.1 - i * 0.003;
       rot.z = THREE.MathUtils.lerp(rot.z, segTargetZ + idleZ, lerpSpeed);
-      rot.x = THREE.MathUtils.lerp(rot.x, segTargetX + idleX, lerpSpeed);
+      rot.x = THREE.MathUtils.lerp(rot.x, 0, lerpSpeed); // Keep X at 0
 
       joint.rotation.z = rot.z;
-      joint.rotation.x = rot.x;
+      joint.rotation.x = rot.x; // Actually zero
     }
   });
 
