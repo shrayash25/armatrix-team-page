@@ -24,13 +24,26 @@ export default function GlowCursor() {
   return (
     <div
       ref={dotRef}
-      className="pointer-events-none fixed z-[9999] -translate-x-1/2 -translate-y-1/2"
+      className="pointer-events-none fixed z-[9999] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none"
       style={{ left: "-100px", top: "-100px" }}
     >
-      {/* Inner bright core */}
-      <div className="w-3 h-3 rounded-full bg-white" />
-      {/* Outer glow */}
-      <div className="absolute inset-0 w-3 h-3 rounded-full bg-white blur-md opacity-60" />
+      {/* 
+        Inner bright core + Multi-layered box-shadow glow.
+        Using box-shadow is much more effective than blur-md for intense glows.
+      */}
+      <div 
+        className="w-1.5 h-1.5 rounded-full bg-white relative animate-pulse"
+        style={{
+          boxShadow: `
+            0 0 10px 2px rgba(255, 255, 255, 0.8),
+            0 0 20px 4px rgba(255, 255, 255, 0.4),
+            0 0 40px 8px rgba(255, 255, 255, 0.2)
+          `
+        }}
+      >
+        {/* Subtle breathing outer halo */}
+        <div className="absolute inset-[-4px] rounded-full border border-white/20 blur-[2px]" />
+      </div>
     </div>
   );
 }
