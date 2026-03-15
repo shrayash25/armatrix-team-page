@@ -3,7 +3,7 @@
  * All team-related API calls go through this module.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://armatrix-team-page-a05t.onrender.com/";
 
 /** Shape of a team member returned by the backend. */
 export interface TeamMember {
