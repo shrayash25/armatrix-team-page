@@ -120,3 +120,39 @@ Changes Made:
 Notes:
 - User had previously updated seed data with real Armatrix team members.
 - The 3D scene is lazy-loaded via React Suspense for performance.
+
+---
+
+## Interaction Entry
+
+Timestamp: 2026-03-15 13:10:51
+
+User Input:
+Replace the generic 3D hero object with a procedurally generated snake robotic arm. Improve team card design with rounded corners and hover glow. Implement cursor-following behavior with mechanical offset.
+
+AI Response Summary:
+Built a 4-component procedural snake robot arm (Segment, BaseUnit, SnakeArm, RobotScene). 8 cylindrical segments chain together with torus joint connectors. The arm tracks cursor movement with intentional offset and propagation delay. Added idle sine-wave micro-motion. Redesigned team cards with rounded corners, soft hover glow, and cleaner layout. Committed and pushed to GitHub.
+
+Files Created:
+- `frontend/components/robot/Segment.tsx`
+- `frontend/components/robot/BaseUnit.tsx`
+- `frontend/components/robot/SnakeArm.tsx`
+- `frontend/components/robot/RobotScene.tsx`
+
+Files Modified:
+- `frontend/app/team/page.tsx` – Replaced ThreeScene with RobotScene
+- `frontend/components/TeamCard.tsx` – Rounded corners, hover glow
+- `frontend/components/TeamGrid.tsx` – Gap-5 spacing
+
+Changes Made:
+- 8-segment articulated robotic arm with cursor tracking
+- Intentional tracking offset (targetX = mouseX * 0.7) for industrial feel
+- Propagation delay: each segment follows previous with 0.78 decay factor
+- Idle sine-wave animation when cursor stops moving
+- BaseUnit dark box with cylindrical connection plate
+- Wireframe overlay on all segments for technical aesthetic
+- Team cards: border-radius 12px, shadow glow on hover
+
+Notes:
+- Committed to GitHub: `feat: replace hero 3D object with procedural snake robotic arm`
+- Old FloatingObject.tsx and ThreeScene.tsx still exist but are no longer imported.
