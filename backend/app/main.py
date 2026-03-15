@@ -16,13 +16,6 @@ from app.models import TeamMember
 from app.routes.team import router as team_router
 from fastapi.middleware.cors import CORSMiddleware
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # or your vercel URL later
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # ---------------------------------------------------------------------------
 # Seed data – realistic Armatrix robotics startup team
